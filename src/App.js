@@ -17,14 +17,19 @@ function App() {
   const [timerActive, setTimerActive] = useState(false);
   const audioRef = useRef(null);
 
+  // Base path for GitHub Pages
+  const basePath = process.env.PUBLIC_URL || "";
+
   // Play disaster sound without overlap
   const playSound = (soundFile) => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
-    audioRef.current = new Audio(`/sounds/${soundFile}`);
-    audioRef.current.play();
+    audioRef.current = new Audio(`${basePath}/sounds/${soundFile}`);
+    audioRef.current.play().catch((error) => {
+      console.warn("Autoplay blocked. User interaction required.", error);
+    });
   };
 
   // Stop sound when game is over
