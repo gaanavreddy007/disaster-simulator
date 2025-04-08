@@ -7,16 +7,23 @@ function Login({ onLogin }) {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Predefined users
+  const users = [
+    { username: 'admin', password: 'admin123' },
+    { username: 'player1', password: 'player123' },
+    { username: 'player2', password: 'player456' }
+  ];
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Simple validation
-    if (username && password) {
-      // Store user in localStorage
-      localStorage.setItem('currentUser', JSON.stringify({ username }));
-      onLogin(username);
+    const user = users.find(u => u.username === username && u.password === password);
+    
+    if (user) {
+      localStorage.setItem('currentUser', JSON.stringify({ username: user.username }));
+      onLogin(user.username);
       navigate('/game');
     } else {
-      setError('Please enter both username and password');
+      setError('Invalid username or password');
     }
   };
 
@@ -57,6 +64,14 @@ function Login({ onLogin }) {
             Login
           </button>
         </form>
+        <div className="mt-4 text-sm text-gray-600">
+          <p>Available users:</p>
+          <ul className="mt-2">
+            <li>Username: admin, Password: admin123</li>
+            <li>Username: player1, Password: player123</li>
+            <li>Username: player2, Password: player456</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

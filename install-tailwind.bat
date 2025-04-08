@@ -1,0 +1,6 @@
+@echo off
+echo Installing Tailwind CSS dependencies...
+call npm install -D tailwindcss postcss autoprefixer
+echo Initializing Tailwind CSS...
+call npx tailwindcss init -p
+echo Done! 

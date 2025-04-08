@@ -7,7 +7,6 @@ import GameOver from './components/GameOver';
 import Login from './components/Login';
 import Leaderboard from './components/Leaderboard';
 import ActivePlayers from './components/ActivePlayers';
-import { saveScore } from './utils/scoreUtils';
 import './App.css';
 
 function Game({ username }) {
@@ -202,7 +201,7 @@ function App() {
   }, []);
 
   return (
-    <Router>
+    <Router basename={process.env.PUBLIC_URL}>
       <div className="min-h-screen bg-gray-100">
         <nav className="bg-white shadow-md p-4">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -224,46 +223,10 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 py-8">
           {username && <ActivePlayers />}
           <Routes>
-            <Route
-              path="/"
-              element={
-                username ? (
-                  <Navigate to="/game" replace />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            <Route
-              path="/login"
-              element={
-                username ? (
-                  <Navigate to="/game" replace />
-                ) : (
-                  <Login onLogin={handleLogin} />
-                )
-              }
-            />
-            <Route
-              path="/game"
-              element={
-                username ? (
-                  <Game username={username} />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            <Route
-              path="/leaderboard"
-              element={
-                username ? (
-                  <Leaderboard />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
+            <Route path="/" element={username ? <Navigate to="/game" /> : <Login onLogin={handleLogin} />} />
+            <Route path="/login" element={username ? <Navigate to="/game" /> : <Login onLogin={handleLogin} />} />
+            <Route path="/game" element={username ? <Game username={username} /> : <Navigate to="/login" />} />
+            <Route path="/leaderboard" element={username ? <Leaderboard /> : <Navigate to="/login" />} />
           </Routes>
         </div>
       </div>
