@@ -1,3 +1,49 @@
+# Disaster Simulator
+
+A React-based disaster simulation game where players must survive different disaster scenarios.
+
+## Features
+
+- User authentication with predefined accounts
+- Multiple disaster scenarios (Earthquake, Flood, Fire)
+- Real-time survival stats tracking
+- Leaderboard system
+- Active players tracking
+
+## Available Users
+
+1. Admin User:
+   - Username: `admin`
+   - Password: `admin123`
+
+2. Player 1:
+   - Username: `player1`
+   - Password: `player123`
+
+3. Player 2:
+   - Username: `player2`
+   - Password: `player456`
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm start
+   ```
+4. Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+
+## Technologies Used
+
+- React
+- React Router
+- Tailwind CSS
+- Local Storage for data persistence
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

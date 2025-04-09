@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import DisasterScenario from './components/DisasterScenario';
 import SurvivalStats from './components/SurvivalStats';
 import Timer from './components/Timer';
 import GameOver from './components/GameOver';
-import { saveScore } from './utils/scoreUtils';
+import Login from './components/Login';
+import Leaderboard from './components/Leaderboard';
+import ActivePlayers from './components/ActivePlayers';
 import './App.css';
 
-function App() {
+function Game({ username }) {
   const [isGameOver, setIsGameOver] = useState(false);
   const [reason, setReason] = useState('');
   const [score, setScore] = useState(0);
@@ -45,7 +48,10 @@ function App() {
     if (!isGameOver) {
       setIsGameOver(true);
       setReason(message);
-      saveScore(score);
+      // Save score to leaderboard
+      const leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+      leaderboard.push({ username, score });
+      localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
       stopSound();
       playSound('game-over.mp3');
     }
@@ -113,6 +119,10 @@ function App() {
   return (
     <div className={`App ${disasterType || ''} ${timeLeft <= 10 ? 'red-alert' : ''}`}>
       <h1>Disaster Survival Simulator</h1>
+      <p className="text-sm mb-4">Playing as: {username}</p>
+      <Link to="/leaderboard" className="text-blue-500 hover:text-blue-700 mb-4 block">
+        View Leaderboard
+      </Link>
 
       {!isGameOver ? (
         <>
@@ -138,6 +148,89 @@ function App() {
         <GameOver restartGame={restartGame} reason={reason} />
       )}
     </div>
+  );
+}
+
+function App() {
+  const [username, setUsername] = useState(null);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (currentUser) {
+      setUsername(currentUser.username);
+      // Add user to active players
+      const activePlayers = JSON.parse(localStorage.getItem('activePlayers') || '[]');
+      if (!activePlayers.find(player => player.username === currentUser.username)) {
+        activePlayers.push({ username: currentUser.username, lastActive: Date.now() });
+        localStorage.setItem('activePlayers', JSON.stringify(activePlayers));
+      }
+    }
+  }, []);
+
+  const handleLogin = (username) => {
+    setUsername(username);
+    // Add user to active players
+    const activePlayers = JSON.parse(localStorage.getItem('activePlayers') || '[]');
+    if (!activePlayers.find(player => player.username === username)) {
+      activePlayers.push({ username, lastActive: Date.now() });
+      localStorage.setItem('activePlayers', JSON.stringify(activePlayers));
+    }
+  };
+
+  const handleLogout = () => {
+    // Remove user from active players
+    const activePlayers = JSON.parse(localStorage.getItem('activePlayers') || '[]');
+    const updatedPlayers = activePlayers.filter(player => player.username !== username);
+    localStorage.setItem('activePlayers', JSON.stringify(updatedPlayers));
+    
+    localStorage.removeItem('currentUser');
+    setUsername(null);
+  };
+
+  // Clean up inactive players every minute
+  useEffect(() => {
+    const cleanupInterval = setInterval(() => {
+      const activePlayers = JSON.parse(localStorage.getItem('activePlayers') || '[]');
+      const now = Date.now();
+      const updatedPlayers = activePlayers.filter(player => now - player.lastActive < 30000); // Remove players inactive for 30 seconds
+      localStorage.setItem('activePlayers', JSON.stringify(updatedPlayers));
+    }, 60000);
+
+    return () => clearInterval(cleanupInterval);
+  }, []);
+
+  return (
+    <Router basename={process.env.PUBLIC_URL}>
+      <div className="min-h-screen bg-gray-100">
+        <nav className="bg-white shadow-md p-4">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 className="text-xl font-bold">Disaster Simulator</h1>
+            {username && (
+              <div className="flex items-center space-x-4">
+                <span>Welcome, {username}</span>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </nav>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {username && <ActivePlayers />}
+          <Routes>
+            <Route path="/" element={username ? <Navigate to="/game" /> : <Login onLogin={handleLogin} />} />
+            <Route path="/login" element={username ? <Navigate to="/game" /> : <Login onLogin={handleLogin} />} />
+            <Route path="/game" element={username ? <Game username={username} /> : <Navigate to="/login" />} />
+            <Route path="/leaderboard" element={username ? <Leaderboard /> : <Navigate to="/login" />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
   );
 }
 
